@@ -144,12 +144,11 @@ def cap_chunks_per_composition(dataset, max_chunks_per_comp=200, seed=15):
             new_dataset.append(new_item)
     return new_dataset
 
-def standardize_to_np(dataset, pad_value=0.0):
-    # Extract all unique composers and eras
+def standardize_to_np(dataset):
+    # Extract unique classes
     all_composers = sorted(list({item["composer"] for item in dataset}))
     all_eras = sorted(list({item["era"] for item in dataset}))
 
-    # Mapping dicts
     composer_to_id = {c: i for i, c in enumerate(all_composers)}
     era_to_id = {e: i for i, e in enumerate(all_eras)}
 
@@ -160,32 +159,33 @@ def standardize_to_np(dataset, pad_value=0.0):
     y_composer = []
     y_era = []
 
-    # Collect sequences
+    # Process sequences
     for item in dataset:
-        composer_id = composer_to_id[item["composer"]]
+        comp_id = composer_to_id[item["composer"]]
         era_id = era_to_id[item["era"]]
 
-        for chunk_tokens in item["tokens"]:
-            # ------------------------
-            # Standardize per chunk
-            # ------------------------
-            chunk_tokens = chunk_tokens.astype(np.float32)
-            mean = chunk_tokens.mean()
-            std = chunk_tokens.std() + 1e-9
-            chunk_tokens = (chunk_tokens - mean) / std
+        for chunk in item["tokens"]:
+            chunk = chunk.astype(np.float32)
 
-            X_chunks.append(chunk_tokens)
-            y_composer.append(composer_id)
+            # Standardize per chunk
+            mean = chunk.mean()
+            std = chunk.std() + 1e-9
+            chunk = (chunk - mean) / std
+
+            X_chunks.append(chunk)
+            y_composer.append(comp_id)
             y_era.append(era_id)
 
-    # Determine max sequence length
-    max_tokens = max(chunk.shape[0] for chunk in X_chunks)
-    token_dim = X_chunks[0].shape[1]
+    # Convert list to numpy (no padding)
+    X = np.stack(X_chunks)   # shape: (n_chunks, seq_len, token_dim)
 
-    # Initialize padded array and mask
-    X_pad = np.full((len(X_chunks), max_tokens, token_dim), pad_value, dtype=np.float32)
-
-    return X_pad, np.array(y_composer, dtype=np.int64), np.array(y_era, dtype=np.int64), composer_to_id, era_to_id
+    return (
+        X,
+        np.array(y_composer, dtype=np.int64),
+        np.array(y_era, dtype=np.int64),
+        composer_to_id,
+        era_to_id
+    )
 
 def preprocess():
     dataset = load_dataset("Symphonies")

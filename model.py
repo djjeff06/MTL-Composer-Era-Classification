@@ -65,13 +65,14 @@ class SymphonyClassifier(nn.Module):
         if device is not None:
             seq_len = x.size(1)
             n_embedding = x.size(2)
-            positional_encoding = compute_positional_encoding(seq_len, n_embedding, device)
+            positional_encoding = compute_positional_encoding(seq_len, n_embedding, device=device)
             x = x + positional_encoding
 
         for encoder in self.transformer_encoders:
             x, attn_weights = encoder(x)
 
         x = x.mean(dim=1)
+
         composer_out = self.fc_composer(x)
         era_out = self.fc_era(x)
         
@@ -83,7 +84,7 @@ class SymphonyClassifier(nn.Module):
         if device is not None:
             seq_len = x.size(1)
             n_embedding = x.size(2)
-            pos_enc = compute_positional_encoding(seq_len, n_embedding, device)
+            pos_enc = compute_positional_encoding(seq_len, n_embedding, device=device)
             x = x + pos_enc
 
         for encoder in self.transformer_encoders:
@@ -99,7 +100,7 @@ class SymphonyClassifier(nn.Module):
         if device is not None:
             seq_len = x.size(1)
             n_embedding = x.size(2)
-            pos_enc = compute_positional_encoding(seq_len, n_embedding, device)
+            pos_enc = compute_positional_encoding(seq_len, n_embedding, device=device)
             x = x + pos_enc
 
         for encoder in self.transformer_encoders:
