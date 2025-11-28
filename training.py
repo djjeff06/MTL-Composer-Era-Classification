@@ -120,6 +120,57 @@ def val(model, val_loader, criterion, device="cpu", task="composer_era"):
 
     return val_loss / len(val_loader), val_acc_composer, val_acc_era
 
+class AugmentedDataset(Dataset):
+    """
+    X: A feature tensor of shape (N, T, D)
+    y_composer, y_era: Label tensors of shape (N,)
+    When augment=True, data augmentation is applied only to the training samples.
+    """
+    def __init__(self, X, y_composer, y_era, augment=False,
+                 noise_std=0.02, time_mask_max_ratio=0.1):
+        self.X = X
+        self.y_composer = y_composer
+        self.y_era = y_era
+        self.augment = augment
+        self.noise_std = noise_std
+        self.time_mask_max_ratio = time_mask_max_ratio
+
+    def __len__(self):
+        return self.X.shape[0]
+
+    def __getitem__(self, idx):
+        x = self.X[idx].clone()              # (T, D)
+        y_comp = self.y_composer[idx]
+        y_era  = self.y_era[idx]
+
+        if self.augment:
+            x = self._augment(x)
+
+        return x, y_comp, y_era
+
+    def _augment(self, x):
+        """
+        x: torch.Tensor, shape (T, D)
+        two simple feature-space augmentations are applied:
+          1. Gaussian noise injection
+          2. Time-masking (SpecAugment-style)
+        """
+
+        # ① Gaussian Noise
+        if torch.rand(1) < 0.5:
+            noise = torch.randn_like(x) * self.noise_std
+            x = x + noise
+
+        # ② Time Masking
+        if torch.rand(1) < 0.5:
+            T = x.size(0)
+            max_len = max(1, int(T * self.time_mask_max_ratio))  # Ex) 10% of the total sequence length
+            mask_len = torch.randint(1, max_len + 1, (1,)).item()
+            start = torch.randint(0, T - mask_len + 1, (1,)).item()
+            x[start:start+mask_len, :] = 0.0
+
+        return x
+
 def main(folder_path, model_name, mode):
     wandb.init(
         project="Symphony Project",
@@ -153,9 +204,17 @@ def main(folder_path, model_name, mode):
     y_composer_val_tensor = torch.from_numpy(y_composer_val).long()
     y_era_val_tensor = torch.from_numpy(y_era_val).long()
 
-    # Create TensorDatasets
-    train_dataset = TensorDataset(X_train_tensor, y_composer_train_tensor, y_era_train_tensor)
-    val_dataset   = TensorDataset(X_val_tensor, y_composer_val_tensor, y_era_val_tensor)
+    # Create Datasets
+    # Only the training dataset uses augment=True
+    train_dataset = AugmentedDataset(
+        X_train_tensor, y_composer_train_tensor, y_era_train_tensor,
+        augment=True
+    )
+    val_dataset = AugmentedDataset(
+        X_val_tensor, y_composer_val_tensor, y_era_val_tensor,
+        augment=False
+    )
+
 
     # Create DataLoaders
     batch_size = 64
