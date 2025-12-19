@@ -61,6 +61,7 @@ Our Multi-Task Learning (MTL) framework outperforms the Single-Task Learning (ST
    'data_path': path containing test file (e.g., project/dataset)<br>
    'model_name': name of the trained model (no file extension needed, include path if needed) (e.g., best_model, models/best_model)<br>
    'mode': 'composer_era', 'composer', 'era' -> choose which label(s) to predict
+   The saved model weights are included in model/ of the repository.
    </p>
 
 6. To visualize embeddings from a trained model:
