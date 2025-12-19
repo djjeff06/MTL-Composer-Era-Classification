@@ -1,8 +1,31 @@
-# Team 27
+# 🎵 Team 27: Composer & Era Classification with Multi-Task Transformers
 
-## Project Overview
+> **Course Project:** Machine Learning (CSIE5043) @ National Taiwan University
 
-This project is part of our deliverables for the course of Machine Learning (CSIE5043) at National Taiwan University.
+This repository contains the implementation of a **Transformer-based multi-task framework** designed to jointly classify classical music composers and their corresponding musical eras from short composition snippets.
+
+![Model Architecture](figures/model_architecture.png)
+
+## 📝 Abstract
+
+Classical music, particularly symphonies, exhibits rich harmonic, rhythmic, and structural features that capture stylistic characteristics of the composer and the time period. In this study, we propose a **multi-task learning framework** using a light-weight **Transformer model** that simultaneously classifies composers and their corresponding musical era from **Mel-patch token representations**.
+
+By jointly learning these tasks and adding a weighting factor to the loss function, the model demonstrates that deep learning can learn meaningful stylistic patterns from relatively short music excerpts, serving as a foundation for broader MIR (Music Information Retrieval) and computational musicology research.
+
+## 🚀 Key Results
+
+Our Multi-Task Learning (MTL) framework outperforms the Single-Task Learning (STL) baselines on both classification tasks:
+
+| Task | STL Accuracy (Baseline) | MTL Accuracy (Ours) |
+| :--- | :--- | :--- |
+| **Era Prediction** | 63.49% | **77.94%** |
+| **Composer Prediction** | 68.97% | **70.87%** |
+
+## 🧠 Model Architecture
+
+* **Input:** Mel-patch token representations derived from audio snippets.
+* **Backbone:** Light-weight Transformer.
+* **Strategy:** Joint learning of Composer and Era targets using a weighted loss function to optimize for both tasks simultaneously.
 
 ## Hardware & System Requirements
 
