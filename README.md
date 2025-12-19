@@ -31,7 +31,7 @@ Our Multi-Task Learning (MTL) framework outperforms the Single-Task Learning (ST
 
 ## Hardware & System Requirements
 
-- GPU: CUDA-enabled GPU with at least 4GB VRAM (required for training)
+- GPU: CUDA-enabled GPU with at least 4GB VRAM (required for training and inference)
 - CPU: Any modern multi-core processor
 - Python: 3.10.12 (ensure dependencies are installed)
 
